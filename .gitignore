@@ -1,0 +1,10 @@
+obj/
+*.o
+*.out
+*.app
+
+*.csv
+*.tsv
+*.dat
+
+decision_tree
