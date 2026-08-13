@@ -1,3 +1,7 @@
+/*
+    This is actually a regression decision tree.
+*/
+
 #ifndef DECISIONTREE_HPP
 #define DECISIONTREE_HPP
 
