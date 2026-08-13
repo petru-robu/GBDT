@@ -1,4 +1,4 @@
-# Gradient Boosted Decision Trees 
+# Gradient Boosted Decision Trees
 
 GBDT implementation in C++
 
@@ -7,4 +7,3 @@ GBDT implementation in C++
 ## Regression Trees
 
 ## Gradient Boosting
-
