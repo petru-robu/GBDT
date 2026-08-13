@@ -377,10 +377,10 @@ private:
             size_t row_idx = indices[i];
             double curr_feat_val = ds.get_value(row_idx, ds.get_feat_idx(best_feat));  
             if (curr_feat_val > threshold) {
-                right_indices.push_back(i); 
+                right_indices.push_back(row_idx); 
             }
             else {
-                left_indices.push_back(i); 
+                left_indices.push_back(row_idx); 
             }
         }
 
