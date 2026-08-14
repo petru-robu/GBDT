@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
+#include <random>
+#include <numeric>
 
 double Dataset::get_value(size_t row, size_t col) {
     return data[row * num_cols + col];
@@ -13,57 +15,58 @@ double Dataset::get_target(size_t row) {
 }
 
 void Dataset::append_row_features(std::vector<double> row) {
-    for(auto &val: row) data.push_back(val);
+    for (auto& val : row)
+        data.push_back(val);
 }
 
 void Dataset::append_row_target(double val) {
     target.push_back(val);
 }
 
-size_t Dataset::get_feat_idx(std::string feat_name) {
+int Dataset::get_feat_idx(std::string feat_name) {
     for (size_t idx = 0; idx < feat_names.size(); idx++) {
-        if(feat_names[idx] == feat_name) return idx;
+        if (feat_names[idx] == feat_name) return idx;
     }
     return -1;
 }
 
 void Dataset::display(int head) {
-    if(head == -1 || head > (int)num_rows) head = num_rows;
+    if (head == -1 || head > (int)num_rows) head = num_rows;
     if (head == 0) {
         std::cout << "Empty Dataset\n";
         return;
     }
 
     std::vector<int> col_widths(num_cols, 0);
-    for(size_t j = 0; j < num_cols; j++) {
-        int max_w = feat_names[j].length(); 
-        for(size_t i = 0; i < (size_t)head; i++) {
+    for (size_t j = 0; j < num_cols; j++) {
+        int max_w = feat_names[j].length();
+        for (size_t i = 0; i < (size_t)head; i++) {
             std::ostringstream oss; oss << get_value(i, j);
             max_w = std::max(max_w, static_cast<int>(oss.str().length()));
         }
-        col_widths[j] = max_w + 2; 
+        col_widths[j] = max_w + 2;
     }
 
     int target_width = target_name.length();
-    for(size_t i = 0; i < (size_t)head; i++) {
+    for (size_t i = 0; i < (size_t)head; i++) {
         std::ostringstream oss; oss << get_target(i);
         target_width = std::max(target_width, static_cast<int>(oss.str().length()));
     }
-    target_width += 2; 
+    target_width += 2;
 
     std::ostringstream idx_oss; idx_oss << (head - 1) << ": ";
     int idx_width = idx_oss.str().length();
 
-    std::cout << std::string(idx_width, ' '); 
-    for(size_t j = 0; j < num_cols; j++) {
-        std::cout << std::right << std::setw(col_widths[j]) << feat_names[j]; 
+    std::cout << std::string(idx_width, ' ');
+    for (size_t j = 0; j < num_cols; j++) {
+        std::cout << std::right << std::setw(col_widths[j]) << feat_names[j];
     }
     std::cout << std::right << std::setw(target_width) << target_name << '\n';
 
-    for(size_t i = 0; i < (size_t)head; i++) {
+    for (size_t i = 0; i < (size_t)head; i++) {
         std::ostringstream row_prefix; row_prefix << i << ": ";
         std::cout << std::left << std::setw(idx_width) << row_prefix.str();
-        for(size_t j = 0; j < num_cols; j++) {
+        for (size_t j = 0; j < num_cols; j++) {
             std::cout << std::right << std::setw(col_widths[j]) << get_value(i, j);
         }
         std::cout << std::right << std::setw(target_width) << get_target(i) << "\n";
@@ -87,7 +90,7 @@ void Dataset::drop_column(const std::string& col_name) {
 
     feat_names.erase(feat_names.begin() + drop_idx);
     std::vector<double> new_data;
-    new_data.reserve(num_rows * (num_cols - 1)); 
+    new_data.reserve(num_rows * (num_cols - 1));
 
     for (size_t r = 0; r < num_rows; ++r) {
         for (size_t c = 0; c < num_cols; ++c) {
@@ -100,22 +103,79 @@ void Dataset::drop_column(const std::string& col_name) {
     num_cols -= 1;
 }
 
+Dataset Dataset::get_datarow(size_t row_idx) {
+    Dataset new_ds;
+
+    if (row_idx >= num_rows) {
+        std::cout << "Invalid row_idx!\n";
+        return new_ds;
+    }
+
+    // 1. Copy the column names
+    new_ds.feat_names = this->feat_names;
+    new_ds.target_name = this->target_name;
+
+    // 2. Copy the data
+    for (size_t j = 0; j < num_cols; j++) {
+        new_ds.data.push_back(get_value(row_idx, j));
+    }
+
+    // 3. Copy the target
+    new_ds.append_row_target(get_target(row_idx));
+
+    // 4. Update dimensions
+    new_ds.num_rows = 1;
+    new_ds.num_cols = this->num_cols;
+
+    return new_ds;
+}
+
+Dataset Dataset::get_subset(const std::vector<size_t>& indices) {
+    Dataset subset;
+    
+    // 1. Copy metadata to prevent segfaults!
+    subset.feat_names = this->feat_names;
+    subset.target_name = this->target_name;
+    subset.num_cols = this->num_cols;
+    subset.num_rows = indices.size();
+
+    // 2. Copy the requested rows
+    for (size_t row_idx : indices) {
+        for (size_t j = 0; j < num_cols; j++) {
+            subset.data.push_back(this->get_value(row_idx, j));
+        }
+        subset.append_row_target(this->get_target(row_idx));
+    }
+    
+    return subset;
+}
+
+std::vector<Dataset> Dataset::get_rows() {
+    std::vector<Dataset> rows;
+    for(size_t i = 0; i < num_rows; i++) {
+        rows.push_back(get_datarow(i));
+    }
+    return rows;
+}
+
+// OTHER DATASET RELATED FUNCTIONS
 std::vector<std::string> single_sep_split_strip(std::string line, char sep) {
     size_t len = line.size();
     std::string curr = "";
-    std::vector<std::string> tokens;    
+    std::vector<std::string> tokens;
 
-    for(size_t i = 0; i < len; i++) {
-        if(line[i] == sep) {
+    for (size_t i = 0; i < len; i++) {
+        if (line[i] == sep) {
             tokens.push_back(curr);
             curr = "";
-        } else curr += line[i];
+        }
+        else curr += line[i];
     }
-    if(!curr.empty()) tokens.push_back(curr);
+    if (!curr.empty()) tokens.push_back(curr);
 
-    for(auto &tok:tokens) {
+    for (auto& tok : tokens) {
         std::string stripped_tok = "";
-        for(auto &ch:tok) {
+        for (auto& ch : tok) {
             if (ch != ' ') stripped_tok.push_back(ch);
         }
         tok = stripped_tok;
@@ -125,28 +185,28 @@ std::vector<std::string> single_sep_split_strip(std::string line, char sep) {
 
 Dataset load_csv(const std::string& csv_path, bool has_header, int target_col_idx) {
     std::ifstream file(csv_path);
-    if(!file.is_open()) throw std::runtime_error("Could not open file " + csv_path);
+    if (!file.is_open()) throw std::runtime_error("Could not open file " + csv_path);
 
     Dataset dataset;
     std::string line;
 
-    while(std::getline(file, line)) {
-        if(line.empty()) continue;
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
 
-        if(has_header) {
+        if (has_header) {
             has_header = false;
             std::vector<std::string> tokens = single_sep_split_strip(line, ',');
-            if(target_col_idx == -1) target_col_idx = tokens.size() - 1;
-            
-            for(size_t i = 0; i < tokens.size(); i++) {
-                if((int)i == target_col_idx) dataset.target_name = tokens[i] + "(y)";
+            if (target_col_idx == -1) target_col_idx = tokens.size() - 1;
+
+            for (size_t i = 0; i < tokens.size(); i++) {
+                if ((int)i == target_col_idx) dataset.target_name = tokens[i] + "(y)";
                 else dataset.feat_names.push_back(tokens[i]);
             }
             continue;
         }
 
         std::vector<std::string> tokens = single_sep_split_strip(line, ',');
-        if(target_col_idx == -1) target_col_idx = tokens.size() - 1;
+        if (target_col_idx == -1) target_col_idx = tokens.size() - 1;
 
         std::vector<double> row_without_target;
         double target = 0;
@@ -162,4 +222,42 @@ Dataset load_csv(const std::string& csv_path, bool has_header, int target_col_id
         dataset.num_rows += 1;
     }
     return dataset;
+}
+
+double calculate_susbset_rss(Dataset& ds, const std::vector<size_t>& indices, double mean_value) {
+    double rss = 0;
+    for(auto &idx : indices) {
+        double y = ds.get_target(idx);
+        rss += (y - mean_value) * (y - mean_value);
+    }
+    return rss;
+}
+
+std::pair<Dataset, Dataset> train_test_split_ds(Dataset &ds, double train_pct) {
+    if (train_pct <= 0.0 || train_pct >= 1.0) {
+        std::cout << "Invalid percentage!\n";
+        return {};
+    }
+
+    // 1. Create a vector of all row indices [0, 1, 2, ..., num_rows-1]
+    std::vector<size_t> indices(ds.num_rows);
+    std::iota(indices.begin(), indices.end(), 0);
+
+    // 2. Shuffle the indices randomly
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(indices.begin(), indices.end(), g);
+
+    // 3. Calculate how many rows go to the training set
+    size_t train_size = static_cast<size_t>(ds.num_rows * train_pct);
+
+    // 4. Split the indices into train and test vectors
+    std::vector<size_t> train_indices(indices.begin(), indices.begin() + train_size);
+    std::vector<size_t> test_indices(indices.begin() + train_size, indices.end());
+
+    // 5. Generate the actual Dataset objects using get_subset
+    Dataset train_ds = ds.get_subset(train_indices);
+    Dataset test_ds = ds.get_subset(test_indices);
+
+    return {train_ds, test_ds};
 }
