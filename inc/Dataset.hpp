@@ -19,13 +19,21 @@ struct Dataset {
     double get_target(size_t row);
     void append_row_features(std::vector<double> row);
     void append_row_target(double val);
-    size_t get_feat_idx(std::string feat_name);
+    int get_feat_idx(std::string feat_name);
     void display(int head = -1);
     void drop_column(const std::string& col_name);
+    Dataset get_datarow(size_t row_idx);
+    Dataset get_subset(const std::vector<size_t>& indices);
+    std::vector<Dataset> get_rows();
+
 };
 
 // Helper functions
 std::vector<std::string> single_sep_split_strip(std::string line, char sep);
 Dataset load_csv(const std::string& csv_path, bool has_header, int target_col_idx = -1);
+double calculate_susbset_rss(Dataset& ds, const std::vector<size_t>& indices, double mean_value);
+std::pair<Dataset, Dataset> train_test_split_ds(Dataset &ds, double train_pct);
+
+
 
 #endif

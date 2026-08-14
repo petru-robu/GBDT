@@ -16,19 +16,34 @@ struct Node {
     std::unique_ptr<Node> left, right;
     std::string feature_name;
     double threshold;
+
+    // error if we forced this node to be a leaf
+    double node_error;
+
+    // combined error of all nodes under
+    double subtree_error;
+
+    // how many leaves below
+    int num_leaves = 1;
 };
 
 class DecisionTree {
 private:
     std::unique_ptr<Node> root;
     int max_depth;
+    int minimum_region_samples;
 
-    std::pair<std::string, double> find_best_split(Dataset &ds, std::vector<size_t> indices);
+    void calculate_metrics(Node* node);
+    Node* find_weakest_link(Node* current_node, double& min_score, Node*& weakest_node);
+
+    std::pair<std::string, double> find_best_split(Dataset& ds, std::vector<size_t> indices);
     double calculate_leaf_value(Dataset& ds, std::vector<size_t> indices);
     std::unique_ptr<Node> build_tree(Dataset& ds, std::vector<size_t> indices, int depth = 0);
 
 public:
-    DecisionTree(Dataset& ds, int max_depth);
+    DecisionTree(Dataset& ds, int max_depth, int minimum_region_samples);
+    double predict(Dataset& ds, size_t row_idx);
+    bool prune_one_branch();
 };
 
 #endif
