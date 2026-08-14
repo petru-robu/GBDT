@@ -105,6 +105,6 @@ int find_optimal_prunes(Dataset& ds) {
         curr_prunes++;
     }
 
-    std::cout << "Optimal state found after " << best_prune_count << " prunes (Lowest Val MSE: " << best_mse << ")\n";
+    std::cout << "Optimal state found after " << best_prune_count << " prunes / "<< curr_prunes << " (Lowest Val MSE: " << best_mse << ")\n";
     return best_prune_count;
 }

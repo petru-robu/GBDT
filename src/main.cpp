@@ -16,12 +16,8 @@ int main() {
     for (int i = 0; i < optimal_cuts; i++) {
         final_tree.prune_one_branch();
     }
-
-    std::cout << "Final tree ready for deployment.\n";
+    
     evaluate_split_dt(ds, final_tree);
-
-
-
 
     return 0;
 }
