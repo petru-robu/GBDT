@@ -49,3 +49,7 @@ Then **prune** (remove weakest_link and recalculate tree errors) one-by-one unti
 ├── obj/                   # Compiled object files (generated during build)
 └── Makefile               # Build automation
 ```
+
+## References
+- *G. James, D. Witten, T. Hastie, R. Tibshirani, and J. Taylor*, An Introduction to Statistical Learning: With Applications in Python. *Springer*, 2023.
+
