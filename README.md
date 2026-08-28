@@ -14,7 +14,7 @@ The 'best split' is determined like this:
 - For every feature, calculate threshold:
     - sort region by feature ascending, move threshold from left to right one by one to form two right and left subregions
     - on the left and right subregions, compute **RSS** (Residual Sum of Squares) sum of both bukets and minimize it: $$\sum (x_i - \bar{x})^2 = \sum x_i^2 - \frac{(\sum x_i)^2}{n}$$
-    - because $ \sum x_i^2 $ is constant, we just maximize $\frac{(\sum x_i)^2}{n} = \text{Average} \cdot \text{Sum}$
+    - because $\sum x_i^2$ is constant, we just maximize $\frac{(\sum x_i)^2}{n} = \text{Average} \cdot \text{Sum}$
 - Keep feature + threshold with lowest RSS - that's the best split at this moment and a node in the tree
 
 Recursively partition the tree like this until we reach `max_depth`. After that we close the node, mark it as leaf and this will hold the average of the rows' target values.
@@ -35,6 +35,17 @@ Then **prune** (remove weakest_link and recalculate tree errors) one-by-one unti
 
 
 ## Gradient Boosting
+
+Gradient boosting is a technique to optimize decision trees even further. On a normal decision tree we might overfit, in gradient boosting we consider an ensamble of tree. We fit the tree on the residuals and then predict, we compute new residuals and fit again on this - until we reach a fixed threshold. T
+
+- This way we are actually improving over time by sequentially minimizing our errors. Because each new tree specifically targets the mistakes of the combined ensemble that came before it, the model acts as a self correcting system.
+
+- Learning rate: We don't add the raw prediction of the trees to the total model, we multiply with a learning rate (ex. 0.01) before adding it to take small steps.
+
+- Final prediciton: After fitting, to predict using our tree ensamble we just sum the scaled predictions of every tree.
+
+## 
+
 
 ## Project structure
 

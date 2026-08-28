@@ -261,3 +261,12 @@ std::pair<Dataset, Dataset> train_test_split_ds(Dataset &ds, double train_pct) {
 
     return {train_ds, test_ds};
 }
+
+void Dataset::swap_in_target(std::vector<double> target_row) {
+    if (target_row.size() != this->num_rows) {
+        std::cout << "Error: New target size (" << target_row.size() << ") does not match dataset row count (" << this->num_rows << ").\n";
+        return;
+    }
+    
+    this->target = std::move(target_row);
+}

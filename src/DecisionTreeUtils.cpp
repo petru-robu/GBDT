@@ -108,3 +108,17 @@ int find_optimal_prunes(Dataset& ds) {
     std::cout << "Optimal state found after " << best_prune_count << " prunes / "<< curr_prunes << " (Lowest Val MSE: " << best_mse << ")\n";
     return best_prune_count;
 }
+
+double get_avg_target(Dataset& ds) {
+    if (ds.num_rows == 0) {
+        std::cout << "Empty dataset!\n";
+        return std::nan(0);
+    }
+
+    double total = 0;
+    for(size_t i = 0; i < ds.num_rows; i++) {
+        total += ds.get_target(i);
+    }
+
+    return total / ds.num_rows;
+}

@@ -26,6 +26,9 @@ struct Dataset {
     Dataset get_subset(const std::vector<size_t>& indices);
     std::vector<Dataset> get_rows();
 
+    void swap_in_target(std::vector<double> target_row);
+
+
 };
 
 // Helper functions
