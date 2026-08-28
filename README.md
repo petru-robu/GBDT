@@ -75,7 +75,7 @@ What better way to test the model's performance than with a regression Kaggle co
 
 ## Running instructions
 
-Just run the makefile and the the executable:
+Just run the makefile and the executable:
 
 ```bash
 make
@@ -85,4 +85,5 @@ make
 
 ## References
 - *G. James, D. Witten, T. Hastie, R. Tibshirani, and J. Taylor*, An Introduction to Statistical Learning: With Applications in Python. *Springer*, 2023.
+- [*Statquest Gradient Boosting Series*](https://www.youtube.com/watch?v=3CC4N4z3GJc&pp=ygUbc3RhdHF1ZXN0IGdyYWRpZW50IGJvb3N0aW5n)
 
