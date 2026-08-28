@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <random>
 #include <numeric>
+#include <unordered_set>
 
 double Dataset::get_value(size_t row, size_t col) {
     return data[row * num_cols + col];
@@ -183,37 +184,86 @@ std::vector<std::string> single_sep_split_strip(std::string line, char sep) {
     return tokens;
 }
 
-Dataset load_csv(const std::string& csv_path, bool has_header, int target_col_idx) {
+Dataset load_csv(const std::string& csv_path, bool has_header, int target_col_idx, const std::vector<std::string>& drop_cols) {
     std::ifstream file(csv_path);
     if (!file.is_open()) throw std::runtime_error("Could not open file " + csv_path);
 
     Dataset dataset;
     std::string line;
+    int row_count = 0;
+    
+    // Store indices of columns we want to ignore
+    std::unordered_set<int> drop_indices;
 
     while (std::getline(file, line)) {
+        row_count++;
         if (line.empty()) continue;
 
-        if (has_header) {
-            has_header = false;
-            std::vector<std::string> tokens = single_sep_split_strip(line, ',');
-            if (target_col_idx == -1) target_col_idx = tokens.size() - 1;
-
-            for (size_t i = 0; i < tokens.size(); i++) {
-                if ((int)i == target_col_idx) dataset.target_name = tokens[i] + "(y)";
-                else dataset.feat_names.push_back(tokens[i]);
-            }
-            continue;
-        }
-
         std::vector<std::string> tokens = single_sep_split_strip(line, ',');
+        
+        // Default target column to the last column if not specified
         if (target_col_idx == -1) target_col_idx = tokens.size() - 1;
 
+        // 1. Process Header
+        if (has_header) {
+            has_header = false;
+            
+            for (size_t i = 0; i < tokens.size(); i++) {
+                std::string col_name = tokens[i];
+                
+                // Clean any carriage returns off the header name
+                col_name.erase(std::remove(col_name.begin(), col_name.end(), '\r'), col_name.end());
+
+                // If column name is in drop_cols, save its index to skip later
+                if (std::find(drop_cols.begin(), drop_cols.end(), col_name) != drop_cols.end()) {
+                    drop_indices.insert(i);
+                    continue;
+                }
+                
+                if ((int)i == target_col_idx) {
+                    dataset.target_name = col_name + "(y)";
+                } else {
+                    dataset.feat_names.push_back(col_name);
+                }
+            }
+            continue; // Move to the first data row
+        }
+
+        // 2. Process Data Rows
         std::vector<double> row_without_target;
-        double target = 0;
+        double target = 0.0;
 
         for (size_t i = 0; i < tokens.size(); i++) {
-            if ((int)i == target_col_idx) target = stod(tokens[i]);
-            else row_without_target.push_back(stod(tokens[i]));
+            // Skip this column entirely if it's in our drop list
+            if (drop_indices.find(i) != drop_indices.end()) {
+                continue;
+            }
+
+            std::string token = tokens[i];
+            
+            // Clean formatting artifacts
+            token.erase(std::remove(token.begin(), token.end(), '\"'), token.end());
+            token.erase(std::remove(token.begin(), token.end(), '\r'), token.end());
+
+            double val = 0.0; 
+
+            if (!token.empty() && token != "NA") {
+                try {
+                    val = std::stod(token);
+                } catch (const std::exception& e) {
+                    throw std::runtime_error(
+                        "Failed to parse numeric value at Row " + std::to_string(row_count) + 
+                        ", Column " + std::to_string(i) + ". Value was: '" + token + "'"
+                    );
+                }
+            }
+
+            // Assign to target or features based on index
+            if ((int)i == target_col_idx) {
+                target = val;
+            } else {
+                row_without_target.push_back(val);
+            }
         }
 
         dataset.num_cols = row_without_target.size();

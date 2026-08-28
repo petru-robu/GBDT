@@ -44,22 +44,44 @@ Gradient boosting is a technique to optimize decision trees even further. On a n
 
 - Final prediciton: After fitting, to predict using our tree ensamble we just sum the scaled predictions of every tree.
 
-## 
+## Testing
+
+What better way to test the model's performance than with a regression Kaggle contest - [House Prices, Advanced Regression Techniques](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
+
+- We are throwing away ~half of the dataset, because the my Dataset class support only numeric features (encoding and other ML techniques are not the focus of this project, so I didn't bother implementing them)
+
+- The Kaggle result is **0.14054**, which is not so bad on this contest, so my tree is actually for real
 
 
 ## Project structure
 
 ```text
 ├── inc/
-│   ├── Dataset.hpp        # Dataset structure and CSV parsing definitions
-│   └── DecisionTree.hpp   # Node structure and decision tree
+│   ├── Dataset.hpp             # Dataset structure and CSV parsing definitions
+│   ├── DecisionTreeUtils.hpp   # Other utilites
+│   ├── GradientBoostedTree.hpp # GBDT structure
+│   └── DecisionTree.hpp        # Node structure and decision tree
 ├── src/
-│   ├── Dataset.cpp        # Implementation of data handling and display
-│   ├── DecisionTree.cpp   # Implementation of the decision tree logic
-│   └── main.cpp           # Main entry point
-├── obj/                   # Compiled object files (generated during build)
-└── Makefile               # Build automation
+│   ├── Dataset.cpp             # Implementation of data handling and display
+│   ├── DecisionTreeUtils.cpp   # Other utilites
+│   ├── GradientBoostedTree.cpp # Implementation of the gbdt logic
+│   ├── DecisionTree.cpp        # Implementation of the decision tree logic
+│   └── main.cpp                # Main entry point
+├── obj/                        # Compiled object files (generated during build)
+├── scripts/generate_ds.py      # A helper script to generate a very simple dataset for testing
+├── data                        # data folder with csv's (gitignored data) - just plug in Kaggle Housing data if you wish to test
+└── Makefile                    # Build automation
 ```
+
+## Running instructions
+
+Just run the makefile and the the executable:
+
+```bash
+make
+./decision_tree
+```
+
 
 ## References
 - *G. James, D. Witten, T. Hastie, R. Tibshirani, and J. Taylor*, An Introduction to Statistical Learning: With Applications in Python. *Springer*, 2023.

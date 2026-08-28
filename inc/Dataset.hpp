@@ -33,7 +33,7 @@ struct Dataset {
 
 // Helper functions
 std::vector<std::string> single_sep_split_strip(std::string line, char sep);
-Dataset load_csv(const std::string& csv_path, bool has_header, int target_col_idx = -1);
+Dataset load_csv(const std::string& csv_path, bool has_header, int target_col_idx = -1, const std::vector<std::string>& drop_cols = {});
 double calculate_susbset_rss(Dataset& ds, const std::vector<size_t>& indices, double mean_value);
 std::pair<Dataset, Dataset> train_test_split_ds(Dataset &ds, double train_pct);
 
